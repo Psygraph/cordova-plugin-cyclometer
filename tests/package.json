@@ -1,0 +1,14 @@
+{
+  "name": "cordova-plugin-cyclometer-tests",
+  "version": "0.8.1",
+  "description": "",
+  "cordova": {
+    "id": "cordova-plugin-cyclometer-tests",
+    "platforms": []
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "",
+  "license": "Apache 2.0"
+}
