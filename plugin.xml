@@ -51,7 +51,7 @@
             </feature>
         </config-file>
 
-        <source-file src="src/android/AccelListener.java" target-dir="src/com/psygraph/pg/cyclometer" />
+        <source-file src="src/android/Cyclometer.java" target-dir="src/com/psygraph/pg/cyclometer" />
 
     </platform>
 
