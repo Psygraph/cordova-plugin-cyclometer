@@ -26,7 +26,7 @@
       }
     }
   },
-  "homepage": "https://github.com/apache/cordova-plugin-accelerometer#readme",
+  "homepage": "https://github.com/psygraph/cordova-plugin-cyclometer#readme",
   "keywords": [
     "cordova",
     "device",
@@ -37,7 +37,7 @@
     "cordova-browser"
   ],
   "license": "Apache-2.0",
-  "name": "cordova-plugin-accelerometer",
+  "name": "cordova-plugin-cyclometer",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/psygraph/cordova-plugin-cyclometer.git"
