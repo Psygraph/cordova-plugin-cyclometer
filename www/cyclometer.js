@@ -39,31 +39,68 @@ var listeners = [];
 
 // Last returned acceleration object from native
 var accel = null;
+var previousAcceleration = [];
 
 // Timer used when faking up devicemotion events
 var eventTimerId = null;
 
+// parameters related to the shake method
+var lastShakeTime   = 0;
+var shakeThreshold  = 12;
+var shakeTimeout    = 1000;
+var shakeListeners  = [];
+
+// The period, in MS
+var updateInterval  = 400
+
+
 // Tells native to start.
-function start() {
+function start(updateInterval) {
     exec(function (a) {
-        var tempListeners = listeners.slice(0);
-        accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
-        for (var i = 0, l = tempListeners.length; i < l; i++) {
-            tempListeners[i].win(accel);
-        }
-    }, function (e) {
-        var tempListeners = listeners.slice(0);
-        for (var i = 0, l = tempListeners.length; i < l; i++) {
-            tempListeners[i].fail(e);
-        }
-    }, "Cyclometer", "start", []);
+            var len = previousAcceleration.length;
+            if(!len)  {
+                accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
+                previousAcceleration[len] = [ accel.timestamp,
+                                              accel.x,
+                                              accel.y,
+                                              accel.z ];
+            }
+            else {
+                if(a.timestamp < previousAcceleration[len-1][0] +updateInterval) {
+                    // If they callback faster than the update interval, sum the acceleration values.
+                    // This is important on Android, where the sensor interval cannot be set explicitly.
+                    // This is an exponential decay average over multiple points, not a true mean.
+                    //previousAcceleration[len-1] = [ (previousAcceleration[len-1][0] +a.timestamp)/2,
+                    //                                (previousAcceleration[len-1][1] +a.x)/2,
+                    //                                (previousAcceleration[len-1][2] +a.y)/2,
+                    //                                (previousAcceleration[len-1][3] +a.z)/2 ];
+                }
+                else {
+                    accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
+                    previousAcceleration[len] = [ accel.timestamp,
+                                                  accel.x,
+                                                  accel.y,
+                                                  accel.z ];
+                }
+                //var tempListeners = listeners.slice(0);
+                //for (var i = 0, l = tempListeners.length; i < l; i++) {
+                //    tempListeners[i].win(accel);
+                //}
+            }
+        }, function (e) {
+            var tempListeners = listeners.slice(0);
+            for (var i = 0, l = tempListeners.length; i < l; i++) {
+                tempListeners[i].fail(e);
+            }
+        }, "Cyclometer", "start", [1.0 * updateInterval]);
     running = true;
 }
-
+    
 // Tells native to stop.
 function stop() {
     exec(null, null, "Cyclometer", "stop", []);
     accel = null;
+    previousAcceleration = [];
     running = false;
 }
 
@@ -79,6 +116,28 @@ function removeListeners(l) {
         listeners.splice(idx, 1);
         if (listeners.length === 0) {
             stop();
+        }
+    }
+}
+
+// determine if the acceleration changes indicate a shake
+function detectShake() {
+    var len = previousAcceleration.length;
+    if (len > 1) {
+        var last = previousAcceleration[len-1];
+        var timeSinceLast = last[0] - lastShakeTime;
+        if(timeSinceLast > shakeTimeout) { 
+            // time to check
+            var prev  = previousAcceleration[len-2];
+            var delta = [prev[1]-last[1], prev[2]-last[2], prev[3]-last[3]];
+            delta = [delta[0]*delta[0], delta[1]*delta[1], delta[2]*delta[2]];
+            if(Math.sqrt(delta[0] + delta[1] + delta[2]) > shakeThreshold) {
+                // Shake detected
+                for(var i=0; i<shakeListeners.length; i++) {
+                    shakeListeners[i]();
+                }
+                lastShakeTime = last[0];
+            }
         }
     }
 }
@@ -118,8 +177,17 @@ var cyclometer = {
         listeners.push(p);
 
         if (!running) {
-            start();
+            // Default interval (1 sec)
+            updateInterval = (options && options.frequency) ? options.frequency : 400;
+            start(updateInterval);
         }
+    },
+
+    getPreviousAcceleration: function() {
+        return previousAcceleration;
+    },
+    setPreviousAcceleration: function(acc) {
+        previousAcceleration = acc;
     },
 
     /**
@@ -132,8 +200,8 @@ var cyclometer = {
      */
     watchAcceleration: function (successCallback, errorCallback, options) {
         argscheck.checkArgs('fFO', 'cyclometer.watchAcceleration', arguments);
-        // Default interval (10 sec)
-        var frequency = (options && options.frequency && typeof options.frequency == 'number') ? options.frequency : 10000;
+        // Default interval (1 sec)
+        updateInterval = (options && options.frequency) ? options.frequency : 400;
 
         // Keep reference to watch id, and report accel readings as often as defined in frequency
         var id = utils.createUUID();
@@ -150,8 +218,9 @@ var cyclometer = {
             timer: window.setInterval(function () {
                 if (accel) {
                     successCallback(accel);
+                    detectShake();
                 }
-            }, frequency),
+            }, updateInterval),
             listeners: p
         };
 
@@ -162,15 +231,15 @@ var cyclometer = {
                 successCallback(accel);
             }
         } else {
-            start();
+            start(updateInterval);
         }
-
+        
         if (cordova.platformId === "browser" && !eventTimerId) {
             // Start firing devicemotion events if we haven't already
             var devicemotionEvent = new Event('devicemotion');
             eventTimerId = window.setInterval(function() {
-                window.dispatchEvent(devicemotionEvent);
-            }, 200);
+                    window.dispatchEvent(devicemotionEvent);
+                }, 200);
         }
 
         return id;
@@ -194,6 +263,26 @@ var cyclometer = {
                 eventTimerId = null;
             }
         }
+    },
+    
+    onShake: function(shakeCB, thresh, timeout) {
+        if(typeof(thresh)!="undefined")
+            shakeThreshold = thresh;
+        if(typeof(timeout)!="undefined")
+            shakeTimeout = timeout;
+        shakeListeners.push(shakeCB);
+    },
+    offShake: function(shakeCB) {
+        if(shakeCB=="all") {
+            shakeListeners = [];
+        }
+        else {
+            var idx = shakeListeners.indexOf(shakeCB);
+            if (idx > -1) {
+                shakeListeners.splice(idx, 1);
+            }
+        }
     }
+
 };
 module.exports = cyclometer;

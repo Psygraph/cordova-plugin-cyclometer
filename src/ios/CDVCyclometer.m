@@ -62,6 +62,8 @@
 
 - (void)start:(CDVInvokedUrlCommand*)command
 {
+    NSNumber *mynumber = [command.arguments objectAtIndex:0];
+    double updateInterval = [mynumber doubleValue];
     self.haveReturnedResult = NO;
     self.callbackId = command.callbackId;
 
@@ -72,7 +74,8 @@
 
     if ([self.motionManager isAccelerometerAvailable] == YES) {
         // Assign the update interval to the motion manager and start updates
-        [self.motionManager setAccelerometerUpdateInterval:kAccelerometerInterval/1000.0];  // expected in seconds
+        //[self.motionManager setAccelerometerUpdateInterval:kAccelerometerInterval/1000.0];  // expected in seconds
+        [self.motionManager setAccelerometerUpdateInterval:updateInterval/1000.0];
         __weak CDVCyclometer* weakSelf = self;
         [self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue mainQueue] withHandler:^(CMAccelerometerData *accelerometerData, NSError *error) {
             weakSelf.x = accelerometerData.acceleration.x;

@@ -100,11 +100,16 @@ public class Cyclometer extends CordovaPlugin implements SensorEventListener {
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         if (action.equals("start")) {
+            double updateInterval = 400;
+            try {
+                updateInterval = args.getDouble(0);
+            } catch (JSONException e) {
+            }  
             this.callbackContext = callbackContext;
             if (this.status != Cyclometer.RUNNING) {
                 // If not running, then this is an async call, so don't worry about waiting
                 // We drop the callback onto our stack, call start, and let start and the sensor callback fire off the callback down the road
-                this.start();
+                this.start(updateInterval);
             }
         }
         else if (action.equals("stop")) {
@@ -139,7 +144,7 @@ public class Cyclometer extends CordovaPlugin implements SensorEventListener {
      *
      * @return          status of listener
     */
-    private int start() {
+    private int start(double updateInterval) {
         // If already starting or running, then restart timeout and return
         if ((this.status == Cyclometer.RUNNING) || (this.status == Cyclometer.STARTING)) {
             startTimeout();
