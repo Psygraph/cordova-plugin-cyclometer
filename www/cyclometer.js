@@ -26,7 +26,7 @@
 var argscheck = require('cordova/argscheck'),
     utils = require("cordova/utils"),
     exec = require("cordova/exec"),
-    Cyclomation = require('./Cyclomation');
+    AccelMeasurement = require('./AccelMeasurement');
 
 // Is the accel sensor running?
 var running = false;
@@ -47,7 +47,7 @@ var eventTimerId = null;
 function start() {
     exec(function (a) {
         var tempListeners = listeners.slice(0);
-        accel = new Cyclomation(a.x, a.y, a.z, a.timestamp);
+        accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
         for (var i = 0, l = tempListeners.length; i < l; i++) {
             tempListeners[i].win(accel);
         }

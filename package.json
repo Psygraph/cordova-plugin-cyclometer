@@ -1,4 +1,25 @@
 {
+  "_from": "git+https://github.com/Psygraph/cordova-plugin-cyclometer.git",
+  "_id": "cordova-plugin-cyclometer@0.8.1",
+  "_inBundle": false,
+  "_integrity": "sha1-JGOP0uuW9QotAPFSmpy8pt1ZbKk=",
+  "_location": "/cordova-plugin-cyclometer",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "git",
+    "raw": "https://github.com/Psygraph/cordova-plugin-cyclometer.git",
+    "rawSpec": "https://github.com/Psygraph/cordova-plugin-cyclometer.git",
+    "saveSpec": "git+https://github.com/Psygraph/cordova-plugin-cyclometer.git",
+    "fetchSpec": "https://github.com/Psygraph/cordova-plugin-cyclometer.git",
+    "gitCommittish": "master"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "git+https://github.com/Psygraph/cordova-plugin-cyclometer.git#701f6cbfaf02c26c256707ff5991698fe47874d1",
+  "_spec": "https://github.com/Psygraph/cordova-plugin-cyclometer.git",
+  "_where": "/Volumes/second/bits/datum/software/pg/client",
   "author": {
     "name": "Psygraph"
   },

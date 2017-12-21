@@ -24,14 +24,14 @@
 
     <name>Cyclometer</name>
     <description>Cordova Cyclometer Plugin</description>
-    <license>CC by SA</license>
+    <license>Apache 2.0</license>
     <keywords>cordova,device,cyclometer</keywords>
     <!--
         <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-device-motion.git</repo>
         <issue>https://issues.apache.org/jira/browse/CB/component/12320636</issue>
         -->
-    <js-module src="www/Cyclometer.js" name="Cyclometer">
-        <clobbers target="Cyclometer" />
+    <js-module src="www/AccelMeasurement.js" name="AccelMeasurement">
+        <clobbers target="AccelMeasurement" />
     </js-module>
 
     <js-module src="www/cyclometer.js" name="cyclometer">
@@ -47,7 +47,7 @@
 
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="Cyclometer">
-                <param name="android-package" value="com.psygraph.pg.cyclometer"/>
+                <param name="android-package" value="com.psygraph.pg.cyclometer.Cyclometer"/>
             </feature>
         </config-file>
 
