@@ -57,35 +57,10 @@ var updateInterval  = 400
 // Tells native to start.
 function start(updateInterval) {
     exec(function (a) {
-            var len = previousAcceleration.length;
-            if(!len)  {
-                accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
-                previousAcceleration[len] = [ accel.timestamp,
-                                              accel.x,
-                                              accel.y,
-                                              accel.z ];
-            }
-            else {
-                if(a.timestamp < previousAcceleration[len-1][0] +updateInterval) {
-                    // If they callback faster than the update interval, sum the acceleration values.
-                    // This is important on Android, where the sensor interval cannot be set explicitly.
-                    // This is an exponential decay average over multiple points, not a true mean.
-                    //previousAcceleration[len-1] = [ (previousAcceleration[len-1][0] +a.timestamp)/2,
-                    //                                (previousAcceleration[len-1][1] +a.x)/2,
-                    //                                (previousAcceleration[len-1][2] +a.y)/2,
-                    //                                (previousAcceleration[len-1][3] +a.z)/2 ];
-                }
-                else {
-                    accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
-                    previousAcceleration[len] = [ accel.timestamp,
-                                                  accel.x,
-                                                  accel.y,
-                                                  accel.z ];
-                }
-                //var tempListeners = listeners.slice(0);
-                //for (var i = 0, l = tempListeners.length; i < l; i++) {
-                //    tempListeners[i].win(accel);
-                //}
+            accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
+            var tempListeners = listeners.slice(0);
+            for (var i = 0, l = tempListeners.length; i < l; i++) {
+                tempListeners[i].win(accel);
             }
         }, function (e) {
             var tempListeners = listeners.slice(0);
@@ -120,26 +95,52 @@ function removeListeners(l) {
     }
 }
 
-// determine if the acceleration changes indicate a shake
-function detectShake() {
+function processValue(accel) {
     var len = previousAcceleration.length;
-    if (len > 1) {
-        var last = previousAcceleration[len-1];
+    if(!len)  {
+        previousAcceleration[len] = [ accel.timestamp,
+                                      accel.x,
+                                      accel.y,
+                                      accel.z ];
+    }
+    else {
+        if(accel.timestamp < previousAcceleration[len-1][0] +updateInterval) {
+            // If they callback faster than the update interval, sum the acceleration values.
+            // This is important on Android, where the sensor interval cannot be set explicitly.
+            // This is an exponential decay average over multiple points, not a true mean.
+            //previousAcceleration[len-1] = [ (previousAcceleration[len-1][0] +a.timestamp)/2,
+            //                                (previousAcceleration[len-1][1] +a.x)/2,
+            //                                (previousAcceleration[len-1][2] +a.y)/2,
+            //                                (previousAcceleration[len-1][3] +a.z)/2 ];
+        }
+        else {
+            previousAcceleration[len] = [ accel.timestamp,
+                                          accel.x,
+                                          accel.y,
+                                          accel.z ];
+            var last = previousAcceleration[len];
+            var prev  = previousAcceleration[len-1];
+            detectShake(last, prev);
+        }
+    }
+    // determine if the acceleration changes indicate a shake
+    function detectShake(last, prev) {
+        var len = previousAcceleration.length;
         var timeSinceLast = last[0] - lastShakeTime;
-        if(timeSinceLast > shakeTimeout) { 
+        if(timeSinceLast > shakeTimeout) {
             // time to check
-            var prev  = previousAcceleration[len-2];
             var delta = [prev[1]-last[1], prev[2]-last[2], prev[3]-last[3]];
             delta = [delta[0]*delta[0], delta[1]*delta[1], delta[2]*delta[2]];
             if(Math.sqrt(delta[0] + delta[1] + delta[2]) > shakeThreshold) {
                 // Shake detected
-                for(var i=0; i<shakeListeners.length; i++) {
-                    shakeListeners[i]();
+                slTemp = shakeListeners.slice(0);
+                for(var i=0; i<slTemp.length; i++) {
+                    slTemp[i]();
                 }
                 lastShakeTime = last[0];
             }
         }
-    }
+    }    
 }
 
 var cyclometer = {
@@ -218,7 +219,7 @@ var cyclometer = {
             timer: window.setInterval(function () {
                 if (accel) {
                     successCallback(accel);
-                    detectShake();
+                    processValue(accel);
                 }
             }, updateInterval),
             listeners: p
