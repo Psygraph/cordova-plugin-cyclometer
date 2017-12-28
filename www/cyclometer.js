@@ -125,7 +125,6 @@ function processValue(accel) {
     }
     // determine if the acceleration changes indicate a shake
     function detectShake(last, prev) {
-        var len = previousAcceleration.length;
         var timeSinceLast = last[0] - lastShakeTime;
         if(timeSinceLast > shakeTimeout) {
             // time to check
@@ -184,12 +183,12 @@ var cyclometer = {
         }
     },
 
-    getPreviousAcceleration: function() {
-        return previousAcceleration;
-    },
-    setPreviousAcceleration: function(acc) {
-        previousAcceleration = acc;
-    },
+    //getPreviousAcceleration: function() {
+    //    return previousAcceleration;
+    //},
+    //setPreviousAcceleration: function(acc) {
+    //    previousAcceleration = acc;
+    //},
 
     /**
      * Asynchronously acquires the acceleration repeatedly at a given interval.
