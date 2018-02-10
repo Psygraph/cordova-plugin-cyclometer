@@ -47,11 +47,37 @@
 
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="Cyclometer">
-                <param name="android-package" value="com.psygraph.pg.cyclometer.Cyclometer"/>
+                <param name="android-package" value="com.psygraph.Cyclometer"/>
             </feature>
         </config-file>
 
-        <source-file src="src/android/Cyclometer.java" target-dir="src/com/psygraph/pg/cyclometer" />
+        <source-file src="src/android/Cyclometer.java" target-dir="src/com/psygraph" />
+        <source-file src="src/android/CyclometerJni.java" target-dir="src/com/psygraph" />
+
+        <!-- PRODUCTION - comment out source files below for debugging -->
+
+        <!-- Compiled C libraries -->
+<!--
+        <source-file src="src/android/libs/arm64-v8a/libcyclometer.so" target-dir="libs/arm64-v8a/" />
+        <source-file src="src/android/libs/armeabi-v7a/libcyclometer.so" target-dir="libs/armeabi-v7a/" />
+        <source-file src="src/android/libs/x86/libcyclometer.so" target-dir="libs/x86/" />
+        <source-file src="src/android/libs/x86_64/libcyclometer.so" target-dir="libs/x86_64/"/>
+-->
+        <!--source-file src="src/android/libs/armeabi/libcyclometer.so" target-dir="libs/armeabi/" /-->
+        <!--source-file src="src/android/libs/mips/libcyclometer.so" target-dir="libs/mips/" /-->
+        <!--source-file src="src/android/libs/mips64/libcyclometer.so" target-dir="libs/mips64/" /-->
+        <!-- END PRODUCTION -->
+
+        <!-- DEBUG - these files are not needed for production -->
+        <!--
+        -->
+        <source-file src="src/android/build-extras.gradle" target-dir="."/>
+        <source-file src="src/android/jni/Android.mk" target-dir="src/c/android/jni"/>
+        <source-file src="src/android/CMakeLists.txt" target-dir="src/c/android"/>
+        <source-file src="src/android/jni/CyclometerJni.c" target-dir="src/c/android/jni"/>
+        <source-file src="src/common/cyclometer.h" target-dir="src/c/common"/>
+        <source-file src="src/common/cyclometer.c" target-dir="src/c/common"/>
+        <!-- END DEBUG -->
 
     </platform>
 
@@ -64,8 +90,22 @@
             </feature>
         </config-file>
 
-        <header-file src="src/ios/CDVCyclometer.h" />
-        <source-file src="src/ios/CDVCyclometer.m" />
+        <!-- Objective-C plugin API -->
+        <header-file src="src/ios/CDVCyclometer.h" target-dir="CDVCyclometer"/>
+        <source-file src="src/ios/CDVCyclometer.m" target-dir="CDVCyclometer"/>
+
+         <!-- PRODUCTION - comment out source files below for debugging -->
+        <!-- Compiled C libraries -->
+        <source-file src="src/ios/libs/libcyclometer.a" framework="true" />
+        <!-- C header files -->
+        <header-file src="src/ios/libs/cyclometer.h" target-dir="CDVCyclometer"/>
+        <!-- END PRODUCTION -->
+
+        <!-- DEBUG - these files are not needed for production - comment in for debugging -->
+        <!-- C source files -->
+        <!--<header-file src="src/common/cyclometer.h" target-dir="CDVCyclometer"/>-->
+        <!--<source-file src="src/common/cyclometer.c" target-dir="CDVCyclometer"/>-->
+        <!-- END DEBUG -->
 
         <framework src="CoreMotion.framework" />
     </platform>

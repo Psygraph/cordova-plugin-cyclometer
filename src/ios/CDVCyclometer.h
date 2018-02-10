@@ -25,6 +25,7 @@
     double x;
     double y;
     double z;
+    int motion;
     NSTimeInterval timestamp;
 }
 
@@ -33,7 +34,10 @@
 
 - (CDVCyclometer*)init;
 
-- (void)start:(CDVInvokedUrlCommand*)command;
-- (void)stop:(CDVInvokedUrlCommand*)command;
+- (void) start:(CDVInvokedUrlCommand*)command;
+- (void) stop:(CDVInvokedUrlCommand*)command;
+- (void) update:(CDVInvokedUrlCommand*)command;
+
+- (void) calculate:(CDVInvokedUrlCommand*)command;
 
 @end

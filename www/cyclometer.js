@@ -37,45 +37,53 @@ var timers = {};
 // Array of listeners; used to keep track of when we should call start and stop.
 var listeners = [];
 
+var MOTION_NONE      = 0x0000;
+var MOTION_TAP       = 0x0001;
+var MOTION_DOUBLETAP = 0x0002;
+var MOTION_STEP      = 0x0004;
+var MOTION_SHAKE     = 0x0008;
+var motion = MOTION_NONE;
+
 // Last returned acceleration object from native
-var accel = null;
-var previousAcceleration = [];
+var accel  = null;
 
 // Timer used when faking up devicemotion events
 var eventTimerId = null;
 
 // parameters related to the shake method
-var lastShakeTime   = 0;
-var shakeThreshold  = 12;
-var shakeTimeout    = 1000;
-var shakeListeners  = [];
-
-// The period, in MS
-var updateInterval  = 400
-
+var shakeThreshold   = 1;
+var shakeTimeout     = 1000;
+var shakeListeners   = [];
+var shakeListenerIDs = [];
+var updateInterval   = 400;
 
 // Tells native to start.
 function start(updateInterval) {
     exec(function (a) {
-            accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
-            var tempListeners = listeners.slice(0);
-            for (var i = 0, l = tempListeners.length; i < l; i++) {
-                tempListeners[i].win(accel);
-            }
-        }, function (e) {
-            var tempListeners = listeners.slice(0);
-            for (var i = 0, l = tempListeners.length; i < l; i++) {
-                tempListeners[i].fail(e);
-            }
-        }, "Cyclometer", "start", [1.0 * updateInterval]);
+        accel = new AccelMeasurement(a.x, a.y, a.z, a.timestamp);
+        motion = motion | a.motion;
+        var tempListeners = listeners.slice(0);
+        for (var i = 0, l = tempListeners.length; i < l; i++) {
+            tempListeners[i].win(accel);
+        }
+    }, function (e) {
+        var tempListeners = listeners.slice(0);
+        for (var i = 0, l = tempListeners.length; i < l; i++) {
+            tempListeners[i].fail(e);
+        }
+    }, "Cyclometer", "start", [1.0 * updateInterval]);
     running = true;
 }
-    
+
+function update(threshold,  timeout) {
+    exec(null, null, "Cyclometer", "update", [threshold, timeout]);
+}
+
 // Tells native to stop.
 function stop() {
     exec(null, null, "Cyclometer", "stop", []);
-    accel = null;
-    previousAcceleration = [];
+    accel  = null;
+    motion = 0;
     running = false;
 }
 
@@ -95,51 +103,20 @@ function removeListeners(l) {
     }
 }
 
-function processValue(accel) {
-    var len = previousAcceleration.length;
-    if(!len)  {
-        previousAcceleration[len] = [ accel.timestamp,
-                                      accel.x,
-                                      accel.y,
-                                      accel.z ];
+function checkMotion() {
+    var m = motion;
+    motion = MOTION_NONE;
+    if(m & MOTION_SHAKE) {
+        var ts = new Date().getTime();
+        var event = [ts, m];
+        shakeCallback(event);
     }
-    else {
-        if(accel.timestamp < previousAcceleration[len-1][0] +updateInterval) {
-            // If they callback faster than the update interval, sum the acceleration values.
-            // This is important on Android, where the sensor interval cannot be set explicitly.
-            // This is an exponential decay average over multiple points, not a true mean.
-            //previousAcceleration[len-1] = [ (previousAcceleration[len-1][0] +a.timestamp)/2,
-            //                                (previousAcceleration[len-1][1] +a.x)/2,
-            //                                (previousAcceleration[len-1][2] +a.y)/2,
-            //                                (previousAcceleration[len-1][3] +a.z)/2 ];
-        }
-        else {
-            previousAcceleration[len] = [ accel.timestamp,
-                                          accel.x,
-                                          accel.y,
-                                          accel.z ];
-            var last = previousAcceleration[len];
-            var prev  = previousAcceleration[len-1];
-            detectShake(last, prev);
-        }
+}
+function shakeCallback(event) {
+    slTemp = shakeListeners.slice(0);
+    for(var i=0; i<slTemp.length; i++) {
+        slTemp[i](event);
     }
-    // determine if the acceleration changes indicate a shake
-    function detectShake(last, prev) {
-        var timeSinceLast = last[0] - lastShakeTime;
-        if(timeSinceLast > shakeTimeout) {
-            // time to check
-            var delta = [prev[1]-last[1], prev[2]-last[2], prev[3]-last[3]];
-            delta = [delta[0]*delta[0], delta[1]*delta[1], delta[2]*delta[2]];
-            if(Math.sqrt(delta[0] + delta[1] + delta[2]) > shakeThreshold) {
-                // Shake detected
-                slTemp = shakeListeners.slice(0);
-                for(var i=0; i<slTemp.length; i++) {
-                    slTemp[i]();
-                }
-                lastShakeTime = last[0];
-            }
-        }
-    }    
 }
 
 var cyclometer = {
@@ -216,9 +193,10 @@ var cyclometer = {
 
         timers[id] = {
             timer: window.setInterval(function () {
-                if (accel) {
+                if (accel!== null) {
                     successCallback(accel);
-                    processValue(accel);
+                    //processValue(accel);
+                    checkMotion();
                 }
             }, updateInterval),
             listeners: p
@@ -264,24 +242,34 @@ var cyclometer = {
             }
         }
     },
-    
-    onShake: function(shakeCB, thresh, timeout) {
-        if(typeof(thresh)!="undefined")
+
+    onShake: function(id, shakeCB, thresh, timeout) {
+        if(shakeCB) {
+            shakeListeners.push(shakeCB);
+            shakeListenerIDs.push(id);
+        }
+        if(typeof(thresh)==="number")
             shakeThreshold = thresh;
-        if(typeof(timeout)!="undefined")
+        if(typeof(timeout)==="number")
             shakeTimeout = timeout;
-        shakeListeners.push(shakeCB);
+        update(shakeThreshold, shakeTimeout);
     },
-    offShake: function(shakeCB) {
-        if(shakeCB=="all") {
+    offShake: function(id) {
+        if(id==="all") {
             shakeListeners = [];
+            shakeListenerIDs = [];
         }
         else {
-            var idx = shakeListeners.indexOf(shakeCB);
+            var idx = shakeListenerIDs.indexOf(id);
             if (idx > -1) {
                 shakeListeners.splice(idx, 1);
+                shakeListenerIDs.splice(idx, 1);
             }
         }
+    },
+
+    calculate: function (x, y, successCallback, errorCallback) {
+        cordova.exec(successCallback, errorCallback, "Cyclometer", "calculate", [x, y]);
     }
 
 };

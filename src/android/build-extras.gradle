@@ -1,0 +1,35 @@
+android {
+
+    packagingOptions {
+        pickFirst 'lib/arm64-v8a/libcyclometer.so'
+        pickFirst 'lib/armeabi/libcyclometer.so'
+        pickFirst 'lib/armeabi-v7a/libcyclometer.so'
+        pickFirst 'lib/mips/libcyclometer.so'
+        pickFirst 'lib/mips64/libcyclometer.so'
+        pickFirst 'lib/x86/libcyclometer.so'
+        pickFirst 'lib/x86_64/libcyclometer.so'
+    }
+
+    defaultConfig {
+        ext.minSdkVersion        = 20
+        ext.targetSdkVersion     = 23
+        ext.cdvBuildMultipleApks = true
+        externalNativeBuild {
+            cmake {}
+            //ndkBuild {
+            //    arguments "-j1"
+            //}
+        }
+    }
+
+    externalNativeBuild {
+        cmake { path "src/c/android/CMakeLists.txt" }
+        //ndkBuild { path "src/c/android/jni/Android.mk" }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs 'src/c/common/', 'src/c/android/jni/'
+        }
+    }
+}

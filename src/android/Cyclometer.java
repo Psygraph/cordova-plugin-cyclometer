@@ -16,10 +16,11 @@
        specific language governing permissions and limitations
        under the License.
 */
-package com.psygraph.pg.cyclometer;
+package com.psygraph;
 
 import java.util.List;
 
+//import org.apache.cordova.*;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -50,7 +51,8 @@ public class Cyclometer extends CordovaPlugin implements SensorEventListener {
     public static int ERROR_FAILED_TO_START = 3;
 
     private float x,y,z;                                // most recent acceleration values
-    private long timestamp;                         // time of most recent value
+    private long timestamp;                             // time of most recent value
+    private int motion;                                 // most recent motion event
     private int status;                                 // status of listener
     private int accuracy = SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM;
 
@@ -74,6 +76,7 @@ public class Cyclometer extends CordovaPlugin implements SensorEventListener {
         this.y = 0;
         this.z = 0;
         this.timestamp = 0;
+        this.motion = 0;
         this.setStatus(Cyclometer.STOPPED);
      }
 
@@ -111,19 +114,45 @@ public class Cyclometer extends CordovaPlugin implements SensorEventListener {
                 // We drop the callback onto our stack, call start, and let start and the sensor callback fire off the callback down the road
                 this.start(updateInterval);
             }
+            PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT, "");
+            result.setKeepCallback(true);
+            callbackContext.sendPluginResult(result);
         }
         else if (action.equals("stop")) {
             if (this.status == Cyclometer.RUNNING) {
                 this.stop();
             }
-        } else {
-          // Unsupported action
+            PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT, "");
+            result.setKeepCallback(true);
+            callbackContext.sendPluginResult(result);
+        }
+        else if (action.equals("calculate")) {
+            int x = 0;
+            int y = 0;
+            try {
+                x = args.getInt(0);
+                y = args.getInt(1);
+            } catch (JSONException e) {
+            }
+            int jniOutput = CyclometerJni.calculate(x,y);
+            callbackContext.success(jniOutput);
+        }
+        else if (action.equals("update")) {
+            float threshold = 0;
+            float timeout = 0;
+            try {
+                threshold = (float) args.getDouble(0);
+                timeout   = (float) args.getDouble(1);
+            } catch (JSONException e) {
+            }
+            CyclometerJni.updateMotion(threshold, timeout);
+            PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT, "");
+            result.setKeepCallback(true);
+            callbackContext.sendPluginResult(result);
+        }
+        else { // Unsupported action
             return false;
         }
-
-        PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT, "");
-        result.setKeepCallback(true);
-        callbackContext.sendPluginResult(result);
         return true;
     }
 
@@ -261,6 +290,7 @@ public class Cyclometer extends CordovaPlugin implements SensorEventListener {
             this.x = event.values[0];
             this.y = event.values[1];
             this.z = event.values[2];
+            this.motion = CyclometerJni.calculateMotion(this.timestamp, this.x, this.y, this.z);
 
             this.win();
         }
@@ -308,6 +338,7 @@ public class Cyclometer extends CordovaPlugin implements SensorEventListener {
             r.put("y", this.y);
             r.put("z", this.z);
             r.put("timestamp", this.timestamp);
+            r.put("motion", this.motion);
         } catch (JSONException e) {
             e.printStackTrace();
         }

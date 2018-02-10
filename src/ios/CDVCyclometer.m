@@ -20,6 +20,8 @@
 #import <CoreMotion/CoreMotion.h>
 #import "CDVCyclometer.h"
 
+#include "cyclometer.h"
+
 @interface CDVCyclometer () {}
 @property (readwrite, assign) BOOL isRunning;
 @property (readwrite, assign) BOOL haveReturnedResult;
@@ -28,11 +30,12 @@
 @property (readwrite, assign) double y;
 @property (readwrite, assign) double z;
 @property (readwrite, assign) NSTimeInterval timestamp;
+@property (readwrite, assign) int motion;
 @end
 
 @implementation CDVCyclometer
 
-@synthesize callbackId, isRunning,x,y,z,timestamp;
+@synthesize callbackId, isRunning,x,y,z,timestamp,motion;
 
 // defaults to 10 msec
 #define kAccelerometerInterval 10
@@ -47,6 +50,7 @@
         self.y = 0;
         self.z = 0;
         self.timestamp = 0;
+        self.motion = 0;
         self.callbackId = nil;
         self.isRunning = NO;
         self.haveReturnedResult = YES;
@@ -82,6 +86,7 @@
             weakSelf.y = accelerometerData.acceleration.y;
             weakSelf.z = accelerometerData.acceleration.z;
             weakSelf.timestamp = ([[NSDate date] timeIntervalSince1970] * 1000);
+            weakSelf.motion = calculateMotion(weakSelf.timestamp, weakSelf.x, weakSelf.y, weakSelf.z);
             [weakSelf returnAccelInfo];
         }];
 
@@ -97,6 +102,16 @@
         [self.commandDelegate sendPluginResult:result callbackId:self.callbackId];
     }
     
+}
+
+- (void)update:(CDVInvokedUrlCommand*)command
+{
+    NSNumber *arg1 = [command.arguments objectAtIndex:0];
+    double threshold = [arg1 doubleValue];
+    NSNumber *arg2 = [command.arguments objectAtIndex:1];
+    double timeout = [arg2 doubleValue];
+
+    updateMotion(threshold, timeout);
 }
 
 - (void)onReset
@@ -119,12 +134,13 @@
 - (void)returnAccelInfo
 {
     // Create an acceleration object
-    NSMutableDictionary* accelProps = [NSMutableDictionary dictionaryWithCapacity:4];
+    NSMutableDictionary* accelProps = [NSMutableDictionary dictionaryWithCapacity:5];
 
     [accelProps setValue:[NSNumber numberWithDouble:self.x * kGravitationalConstant] forKey:@"x"];
     [accelProps setValue:[NSNumber numberWithDouble:self.y * kGravitationalConstant] forKey:@"y"];
     [accelProps setValue:[NSNumber numberWithDouble:self.z * kGravitationalConstant] forKey:@"z"];
     [accelProps setValue:[NSNumber numberWithDouble:self.timestamp] forKey:@"timestamp"];
+    [accelProps setValue:[NSNumber numberWithInt:self.motion] forKey:@"motion"];
 
     CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:accelProps];
     [result setKeepCallback:[NSNumber numberWithBool:YES]];
@@ -149,4 +165,23 @@
 
 
  */
+
+- (void)calculate:(CDVInvokedUrlCommand *)command
+{
+    NSString* a = [[command arguments] objectAtIndex:0];
+    NSString* b = [[command arguments] objectAtIndex:1];
+
+    float x = a.doubleValue;
+    float y = b.doubleValue;
+    int output = calculate(x,y);
+
+    NSLog(@"%@", [NSString stringWithFormat: @"x=%f, y=%f, result=%d",x,y,output]);
+
+    CDVPluginResult* result = [CDVPluginResult
+                               resultWithStatus:CDVCommandStatus_OK
+                               messageAsInt:output];
+
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+}
+
 @end
