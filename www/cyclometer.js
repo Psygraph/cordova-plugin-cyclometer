@@ -178,7 +178,8 @@ var cyclometer = {
     watchAcceleration: function (successCallback, errorCallback, options) {
         argscheck.checkArgs('fFO', 'cyclometer.watchAcceleration', arguments);
         // Default interval (1 sec)
-        updateInterval = (options && options.frequency) ? options.frequency : 400;
+        var period         = (options && options.period) ? options.period : 100;
+        var updateInterval = (options && options.updateInterval) ? options.updateInterval : 200;
 
         // Keep reference to watch id, and report accel readings as often as defined in frequency
         var id = utils.createUUID();
@@ -209,7 +210,7 @@ var cyclometer = {
                 successCallback(accel);
             }
         } else {
-            start(updateInterval);
+            start(period);
         }
         
         if (cordova.platformId === "browser" && !eventTimerId) {
