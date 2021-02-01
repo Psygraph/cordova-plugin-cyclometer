@@ -1,72 +1,44 @@
 {
-  "_from": "git+https://github.com/Psygraph/cordova-plugin-cyclometer.git",
-  "_id": "cordova-plugin-cyclometer@0.8.1",
-  "_inBundle": false,
-  "_integrity": "sha1-JGOP0uuW9QotAPFSmpy8pt1ZbKk=",
-  "_location": "/cordova-plugin-cyclometer",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "git",
-    "raw": "https://github.com/Psygraph/cordova-plugin-cyclometer.git",
-    "rawSpec": "https://github.com/Psygraph/cordova-plugin-cyclometer.git",
-    "saveSpec": "git+https://github.com/Psygraph/cordova-plugin-cyclometer.git",
-    "fetchSpec": "https://github.com/Psygraph/cordova-plugin-cyclometer.git",
-    "gitCommittish": "master"
-  },
-  "_requiredBy": [
-    "#USER",
-    "/"
-  ],
-  "_resolved": "git+https://github.com/Psygraph/cordova-plugin-cyclometer.git#701f6cbfaf02c26c256707ff5991698fe47874d1",
-  "_spec": "https://github.com/Psygraph/cordova-plugin-cyclometer.git",
-  "_where": "/Volumes/second/bits/datum/software/pg/client",
-  "author": {
-    "name": "Psygraph"
-  },
-  "bugs": {
-    "url": "https://github.com/psygraph/cordova-plugin-cyclometer/issues"
-  },
-  "bundleDependencies": false,
+  "name": "cordova-plugin-cyclometer",
+  "version": "0.8.1",
+  "description": "Cordova Cyclometer Plugin",
   "cordova": {
     "id": "cordova-plugin-cyclometer",
     "platforms": [
       "android",
-      "ios",
-      "browser"
+      "ios"
     ]
   },
-  "deprecated": false,
-  "description": "Cordova Cyclometer Plugin",
-  "devDependencies": {
-    "jshint": "^2.6.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Psygraph/cordova-plugin-cyclometer.git"
   },
-  "engines": {
-    "cordovaDependencies": {
-      "2.0.0": {
-        "cordova": ">100"
-      }
-    }
-  },
-  "homepage": "https://github.com/psygraph/cordova-plugin-cyclometer#readme",
   "keywords": [
     "cordova",
     "device",
-    "motion",
+    "cyclometer",
     "ecosystem:cordova",
     "cordova-android",
-    "cordova-ios",
-    "cordova-browser"
+    "cordova-ios"
   ],
-  "license": "Apache-2.0",
-  "name": "cordova-plugin-cyclometer",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/psygraph/cordova-plugin-cyclometer.git"
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=1.7.0"
+    },
+    {
+      "name": "cordova-android",
+      "version": ">=1.8.0"
+    },
+    {
+      "name": "cordova-ios",
+      "version": ">=1.7.1"
+    }
+  ],
+  "author": "arogers",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/Psygraph/cordova-plugin-cyclometer/issues"
   },
-  "scripts": {
-    "jshint": "node node_modules/jshint/bin/jshint www && node node_modules/jshint/bin/jshint src && node node_modules/jshint/bin/jshint tests",
-    "test": "npm run jshint"
-  },
-  "types": "./types/index.d.ts",
-  "version": "0.8.1"
+  "homepage": "https://github.com/Psygraph/cordova-plugin-cyclometer#readme"
 }

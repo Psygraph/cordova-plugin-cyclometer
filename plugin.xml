@@ -1,119 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing,
-  software distributed under the License is distributed on an
-  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  KIND, either express or implied.  See the License for the
-  specific language governing permissions and limitations
-  under the License.
--->
-
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-           id="cordova-plugin-cyclometer"
-      version="0.8.1">
+        id="cordova-plugin-cyclometer"
+	version="0.8.1">
+  
+  <name>Cyclometer</name>
+  <description>Cordova Cyclometer Plugin</description>
+  <license>Apache 2.0</license>
+  <keywords>cordova,device,cyclometer</keywords>
+  <!--
+      <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-device-motion.git</repo>
+      <issue>https://issues.apache.org/jira/browse/CB/component/12320636</issue>
+  -->
+  <js-module src="www/AccelMeasurement.js" name="AccelMeasurement">
+    <clobbers target="AccelMeasurement" />
+  </js-module>
+  
+  <js-module src="www/cyclometer.js" name="cyclometer">
+    <clobbers target="navigator.cyclometer" />
+  </js-module>
+  
+  <info>
+    cordova-plugin-cyclometer
+  </info>
+  
+  <!-- android -->
+  <platform name="android">
+    
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="Cyclometer">
+        <param name="android-package" value="com.psygraph.Cyclometer"/>
+      </feature>
+    </config-file>
+    
+    <source-file src="src/android/Cyclometer.java" target-dir="src/com/psygraph" />
+    <source-file src="src/android/CyclometerJni.java" target-dir="src/com/psygraph" />
+    
+    <!-- PRODUCTION - comment out source files below for debugging -->
 
-    <name>Cyclometer</name>
-    <description>Cordova Cyclometer Plugin</description>
-    <license>Apache 2.0</license>
-    <keywords>cordova,device,cyclometer</keywords>
+    <!-- Compiled C libraries -->
     <!--
-        <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-device-motion.git</repo>
-        <issue>https://issues.apache.org/jira/browse/CB/component/12320636</issue>
-        -->
-    <js-module src="www/AccelMeasurement.js" name="AccelMeasurement">
-        <clobbers target="AccelMeasurement" />
-    </js-module>
-
-    <js-module src="www/cyclometer.js" name="cyclometer">
-        <clobbers target="navigator.cyclometer" />
-    </js-module>
-
-    <info>
-        cordova-plugin-cyclometer
-    </info>
-
-    <!-- android -->
-    <platform name="android">
-
-        <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="Cyclometer">
-                <param name="android-package" value="com.psygraph.Cyclometer"/>
-            </feature>
-        </config-file>
-
-        <source-file src="src/android/Cyclometer.java" target-dir="src/com/psygraph" />
-        <source-file src="src/android/CyclometerJni.java" target-dir="src/com/psygraph" />
-
-        <!-- PRODUCTION - comment out source files below for debugging -->
-
-        <!-- Compiled C libraries -->
-<!--
         <source-file src="src/android/libs/arm64-v8a/libcyclometer.so" target-dir="libs/arm64-v8a/" />
         <source-file src="src/android/libs/armeabi-v7a/libcyclometer.so" target-dir="libs/armeabi-v7a/" />
         <source-file src="src/android/libs/x86/libcyclometer.so" target-dir="libs/x86/" />
         <source-file src="src/android/libs/x86_64/libcyclometer.so" target-dir="libs/x86_64/"/>
--->
-        <!--source-file src="src/android/libs/armeabi/libcyclometer.so" target-dir="libs/armeabi/" /-->
-        <!--source-file src="src/android/libs/mips/libcyclometer.so" target-dir="libs/mips/" /-->
-        <!--source-file src="src/android/libs/mips64/libcyclometer.so" target-dir="libs/mips64/" /-->
-        <!-- END PRODUCTION -->
-
-        <!-- DEBUG - these files are not needed for production -->
-        <!--
-        -->
-        <source-file src="src/android/build-extras.gradle" target-dir="."/>
-        <source-file src="src/android/jni/Android.mk" target-dir="src/c/android/jni"/>
-        <source-file src="src/android/CMakeLists.txt" target-dir="src/c/android"/>
-        <source-file src="src/android/jni/CyclometerJni.c" target-dir="src/c/android/jni"/>
-        <source-file src="src/common/cyclometer.h" target-dir="src/c/common"/>
-        <source-file src="src/common/cyclometer.c" target-dir="src/c/common"/>
-        <!-- END DEBUG -->
-
-    </platform>
-
-    <!-- ios -->
-    <platform name="ios">
-
-        <config-file target="config.xml" parent="/*">
-            <feature name="Cyclometer">
-                <param name="ios-package" value="CDVCyclometer"/>
-            </feature>
-        </config-file>
-
-        <!-- Objective-C plugin API -->
-        <header-file src="src/ios/CDVCyclometer.h" target-dir="CDVCyclometer"/>
-        <source-file src="src/ios/CDVCyclometer.m" target-dir="CDVCyclometer"/>
-
-         <!-- PRODUCTION - comment out source files below for debugging -->
-        <!-- Compiled C libraries -->
-        <source-file src="src/ios/libs/libcyclometer.a" framework="true" />
-        <!-- C header files -->
-        <header-file src="src/ios/libs/cyclometer.h" target-dir="CDVCyclometer"/>
-        <!-- END PRODUCTION -->
-
-        <!-- DEBUG - these files are not needed for production - comment in for debugging -->
-        <!-- C source files -->
-        <!--<header-file src="src/common/cyclometer.h" target-dir="CDVCyclometer"/>-->
-        <!--<source-file src="src/common/cyclometer.c" target-dir="CDVCyclometer"/>-->
-        <!-- END DEBUG -->
-
-        <framework src="CoreMotion.framework" />
-    </platform>
-
-    <!-- browser -->
-    <platform name="browser">
-        <js-module src="src/browser/CyclometerProxy.js" name="CyclometerProxy">
-            <runs/>
-        </js-module>
-    </platform>
+    -->
+    <!--source-file src="src/android/libs/armeabi/libcyclometer.so" target-dir="libs/armeabi/" /-->
+    <!--source-file src="src/android/libs/mips/libcyclometer.so" target-dir="libs/mips/" /-->
+    <!--source-file src="src/android/libs/mips64/libcyclometer.so" target-dir="libs/mips64/" /-->
+    <!-- END PRODUCTION -->
+    
+    <!-- DEBUG - these files are not needed for production -->
+    <!--
+    -->
+    <source-file src="src/android/build-extras.gradle" target-dir="."/>
+    <source-file src="src/android/jni/Android.mk" target-dir="src/c/android/jni"/>
+    <source-file src="src/android/CMakeLists.txt" target-dir="src/c/android"/>
+    <source-file src="src/android/jni/CyclometerJni.c" target-dir="src/c/android/jni"/>
+    <source-file src="src/common/cyclometer.h" target-dir="src/c/common"/>
+    <source-file src="src/common/cyclometer.c" target-dir="src/c/common"/>
+    <!-- END DEBUG -->
+    
+  </platform>
+  
+  <!-- ios -->
+  <platform name="ios">
+    
+    <config-file target="config.xml" parent="/*">
+      <feature name="Cyclometer">
+        <param name="ios-package" value="CDVCyclometer"/>
+      </feature>
+    </config-file>
+    
+    <!-- Objective-C plugin API -->
+    <header-file src="src/ios/CDVCyclometer.h" target-dir="CDVCyclometer"/>
+    <source-file src="src/ios/CDVCyclometer.m" target-dir="CDVCyclometer"/>
+    
+    <!-- PRODUCTION - comment out source files below for debugging -->
+    <!-- Compiled C libraries -->
+    <source-file src="src/ios/libs/libcyclometer.a" framework="true" />
+    <!-- C header files -->
+    <header-file src="src/ios/libs/cyclometer.h" target-dir="CDVCyclometer"/>
+    <!-- END PRODUCTION -->
+    
+    <!-- DEBUG - these files are not needed for production - comment in for debugging -->
+    <!-- C source files -->
+    <!--<header-file src="src/common/cyclometer.h" target-dir="CDVCyclometer"/>-->
+    <!--<source-file src="src/common/cyclometer.c" target-dir="CDVCyclometer"/>-->
+    <!-- END DEBUG -->
+    
+    <framework src="CoreMotion.framework" />
+  </platform>
+  
+  <!-- browser -->
+  <platform name="browser">
+    <js-module src="src/browser/CyclometerProxy.js" name="CyclometerProxy">
+      <runs/>
+    </js-module>
+  </platform>
 </plugin>
+
+  
